@@ -1,0 +1,30 @@
+=== Cell 0 (markdown) ===
+# Practice 08 — Tensor Manipulation
+
+Original Authors: Seungjae Ryan Lee, Ki Hyun Kim  
+Source: https://github.com/deeplearningzerotoall/PyTorch
+
+Practice 07에서 Tensor 생성과 Autograd를 배웠습니다.  
+이 노트북에서는 PyTorch Tensor의 **조작(manipulation)** 연산을 익힙니다.
+
+| 핵심 개념 | 설명 |
+|---|---|
+| `view` / `reshape` | 텐서 형태 변환 (NumPy의 `reshape`에 해당) |
+| `matmul` / `@` | 행렬 곱셈 |
+| `squeeze` / `unsqueeze` | 차원 축소/확장 |
+| `cat` / `stack` | 텐서 결합 |
+
+=== Cell 1 (code) ===
+import numpy as np
+import torch
+
+=== Cell 2 (markdown) ===
+---
+# 1. NumPy → PyTorch
+
+PyTorch 텐서는 NumPy 배열과 거의 동일한 API를 가지고 있습니다.  
+NumPy에서 익숙한 연산들이 PyTorch에서도 같은 방식으로 동작합니다.
+
+=== Cell 3 (markdown) ===
+### 1D Tensor
+

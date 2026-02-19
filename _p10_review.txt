@@ -1,0 +1,112 @@
+=== Cell 0 (markdown) ===
+# Practice 10 — Mult
+
+=== Cell 1 (code) ===
+import numpy as np
+import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn.model_selection import train_test_split
+
+=== Cell 2 (markdown) ===
+---
+# 1. XOR 문제 — 왜 다층이 필요한가?
+
+XOR은 **선형 분리 불가능**한 문제입니다. 단층 퍼셉트론으로는 해결할 수 없고, 은닉층이 필요합니다.
+
+=== Cell 3 (code) ===
+# XOR 데이터
+X_xor = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float64)
+Y_xor = np.array([[0], [1], [1], [0]], dtype=np.float64)
+
+fig, ax = plt.subplots(1, 1, figsize=(4, 4))
+ax.scatter(X_xor[Y_xor.flatten()==0, 0], X_xor[Y_xor.flatten()==0, 1], c='r', s=100, label='y=0')
+ax.scatter(X_xor[Y_xor.flatten()==1, 0], X_xor[Y_xor.flatten()==1, 1], c='b', s=100, label='y=1')
+ax.set_title('XOR Problem'); ax.legend(); ax.grid(alpha=0.3)
+ax.set_xlabel('x1'); ax.set_ylabel('x2')
+plt.tight_layout(); plt.show()
+
+=== Cell 4 (markdown) ===
+### 단층 퍼셉트론 — 실패
+
+=== Cell 5 (code) ===
+# 단층 퍼셉트론으로 XOR 시도
+X_t = torch.tensor(X_xor, dtype=torch.float32)
+y_t = torch.tensor(Y_xor, dtype=torch.float32)
+
+model_single = nn.Linear(2, 1)
+criterion = nn.BCEWithLogitsLoss()
+optimizer = torch.optim.SGD(model_single.parameters(), lr=0.5)
+
+for epoch in range(1000):
+    loss = criterion(model_single(X_t), y_t)
+    loss.backward()
+    optimizer.step()
+    optimizer.zero_grad()
+
+with torch.no_grad():
+    pred = (torch.sigmoid(model_single(X_t)) >= 0.5).int().flatten()
+    acc = (pred == y_t.int().flatten()).float().mean()
+
+print(f'Single layer prediction: {pred.numpy()}')
+print(f'True labels:             {Y_xor.flatten().astype(int)}')
+
+
+=== Cell 6 (markdown) ===
+---
+# 2. 다층 퍼셉트론 Backpropagation 수동 구현 (NumPy)
+
+### MLP 구조
+
+```
+Input x  →  Hidden Layer  →  Hidden Act  →  Output Layer  →  Output Act  →  Output
+(d+1,1)    zsum = U¹x       z̃ = τ(zsum)    osum = U²z       o = τ(osum)    (c,1)
+            p × (d+1)        (p,1)           c × (p+1)        (c,1)
+```
+
+$$\mathbf{z} = \begin{pmatrix} 1 \\ \tilde{\mathbf{z}} \end{pmatrix} \quad (p\!+\!1,\; 1)$$
+
+### Gradient 유도 (Lec 06) — 샘플 1개에 대해
+
+$$J = \frac{1}{2} \sum_k (y_k - o_k)^2$$
+
+| | 수식 | 의미 |
+|---|---|---|
+| $\delta_k$ | $(y_k - o_k) \cdot \tau'(osum_k)$ | 출력층 오차 신호 |
+
+
+=== Cell 7 (markdown) ===
+### XOR 학습 — Stochastic (샘플별 업데이트)
+
+=== ALL CELLS OVERVIEW ===
+[  0] markdown | #
+[  1] code     | import numpy as np
+import torch
+[  2] markdown | ---
+# 1. XOR 문제 — 왜 다층이 필요한가?
+[  3] code     | # XOR 데이터
+X_xor = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=np.float64)
+[  4] markdown | ### 단층 퍼셉트론 — 실패
+[  5] code     | # 단층 퍼셉트론으로 XOR 시도
+X_t = torch.tensor(X_xor, dtype=torch.float32)
+[  6] markdown | ---
+# 2. 다층 퍼셉트론 Backpropagation 수동 구현 (NumPy)
+[  7] markdown | ### XOR 학습 — Stochastic (샘플별 업데이트)
+[  8] code     | # --- 활성화 함수 ---
+def sigmoid(x):
+[  9] code     | # 학습 결과 확인 (배치 추론)
+Zsum = X @ U1.T                                    # (N, p)
+[ 10] code     | fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+[ 11] markdown | ---
+# 3. PyTorch autograd 검증
+[ 12] code     | class XOR_MLP(nn.Module):
+    def __init__(self):
+[ 13] code     | fig, ax = plt.subplots(figsize=(6, 4))
+ax.plot(loss_hist, 'b-', lw=1.5, label='NumPy (MSE)')
+[ 14] markdown | ---
+# 4. Multi-class 출력 시 Criterion 변화
+[ 15] code     | # --- Binary: sigmoid + BCEWithLogitsLoss ---
+print('=== Binary (XOR) ===')
+[ 16] code     | # --- Multi-class: CrossEntropyLoss (softmax 내장) ---
+print('=== Multi-class (Iris 3-class) ===')
